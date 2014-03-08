@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Wallpaper dice</title>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<style>
+body{
+	background-size: cover;
+	background-attachment: fixed;
+}
+img{
+	max-width:200px;
+	/*max-height:200px;*/
+	border: 3px solid #6AB5FA;
+	border-radius: 8px;
+}
+ul{
+	height: 180px;
+	margin-top: 20px;
+	margin-right: 4%;
+	float: right;
+	list-style:none;	
+}
+button{
+	font-family: monospace;
+}
+.control {
+	position: absolute;
+	margin-top: 20px;
+	margin-left: 20px;
+}
+</style>
+<script>
+$(document).ready(function(){
+	var bg='';
+	var tImage=new Image();
+	$("#randomize").click(function(){
+		var path="http://dl.dropboxusercontent.com/u/73985358/WallPaper/";
+		var fileList="fileList_sub.json";
+		$.getJSON(path+fileList,function(list,status){
+			var mime='*';
+			while (mime.search('image')){
+				obj=list[Math.floor(Math.random()*list.length)]
+				mime=obj.mime;
+			};
+			bg=path+obj.path;
+			var id=String(Date.now());
+			var fn=bg.substr(bg.lastIndexOf('\/')+1)
+			
+			console.log(id+':set to '+bg)
+			console.log('size='+obj.st_size);
+			
+			bg = bg.replace('#','%23');
+			document.body.background=bg;
+			$('ul').prepend('<li><div><img id="'+id+'" src="'+bg+'" /></div></li>');
+			//$('<li><img src="' + bg + '"/></li>').appendTo('li');
+			//$('#'+id).click(orz);
+			$('#'+id).click(function(){saveImgAs(bg,fn)});
+			tImage.onload=null;
+			tImage.src=bg;
+			tImage.onload=function(){
+				var title=fn +'  ('+tImage.width+'x'+tImage.height+' = '+bytesToSize(obj.st_size)+')';
+				document.title= title;
+				$('#'+id)[0].title=title;
+			$('input')[0].value="";
+			//alert(obj.st_size)
+			};    
+		});
+	});
+	$("#downapp").click(function(){
+		window.location.href="WallpaperUpdater.4.apk";
+	});
+	$("#downscript").click(function(){
+		window.location.href="Tasker_RandomWallpaper_Release.zip";
+	});
+	$("#downimg").click(function(){
+		if (bg){
+			var fn=$('input')[0].value;
+			saveImgAs(bg,fn ? fn : bg.substr(bg.lastIndexOf('\/')+1));
+		};
+	});
+	$('#filename').bind('keyup', function(event){
+        if (event.keyCode=="13"){
+            $(".downimg").click();
+        }
+    });
+	$("#randomize").click();
+});
+var orz=function(){alert('orz');}
+
+function saveImgAs(Url,filename){
+	var blob=new Blob([''], {type:'application/octet-stream'});	
+	var url = webkitURL.createObjectURL(blob);
+	var a = document.createElementNS("http://www.w3.org/1999/xhtml","a");
+	a.href = Url;
+	//var a=$("<a>").attr("href", url);
+	a.download = filename; 
+	var e = document.createEvent('MouseEvents');
+	e.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+	a.dispatchEvent(e);
+	webkitURL.revokeObjectURL(url);
+};	
+function bytesToSize(bytes) {
+  var sizes = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+  if (bytes == 0) return 'n/a';
+  var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+  if (i == 0) { return (bytes / Math.pow(1024, i)) + ' ' + sizes[i]; }
+  return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+}
+</script>
+</head>
+<body>
+	<div class="control">
+		<button id="randomize"	>Randomize backgroud</button>
+		<button id="downimg"		>Download this image</button>
+		<input id="filename" placeholder="Alternative filename"></input>
+		
+		<br><br>
+		
+		<button id="downapp"		>Apk(tasker factoryed)</button>
+		<button id="downscript"		>Tasker scripts</button>
+		<a href="index.html">Browser files</a>
+	</div>
+	<ul>
+	</ul>
+</body>
+</html>
